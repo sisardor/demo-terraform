@@ -1,6 +1,7 @@
 variable "infra_env" {
   type        = string
   description = "infrastructure environment"
+  default = "dev"
 }
 variable "public_subnet_numbers" {
   type        = map(number)

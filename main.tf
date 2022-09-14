@@ -92,7 +92,6 @@ resource "aws_iam_policy" "lambda-ocr-module-logs-policy" {
   })
 }
 
-
 resource "aws_iam_policy" "policy_one" {
   name        = "policy-test-one"
   description = "Test policy"
@@ -113,7 +112,6 @@ resource "aws_iam_policy" "policy_one" {
     ]
   })
 }
-
 
 resource "aws_security_group" "sg_for_lambda" {
   name        = "allow_nfs_port"
@@ -146,7 +144,6 @@ resource "aws_security_group_rule" "public_out" {
 resource "aws_lambda_layer_version" "lambda_layer" {
   filename   = "PDFNetPython3.zip"
   layer_name = "PDFNetPython3-test"
-
   compatible_runtimes      = ["python3.8", "python3.9"]
   compatible_architectures = ["x86_64"]
 }
@@ -154,48 +151,16 @@ resource "aws_lambda_layer_version" "lambda_layer" {
 resource "aws_lambda_layer_version" "lambda_layer_two" {
   filename   = "OCRModuleLinux.zip"
   layer_name = "OCRModuleLinux-test"
-
   compatible_runtimes      = ["python3.8", "python3.9"]
   compatible_architectures = ["x86_64"]
 }
 
-
-
-
-
 resource "aws_api_gateway_rest_api" "lambda-ocr-module-rest" {
-
   name = "dev-pdftron-ocr-test"
-
   endpoint_configuration {
     types = ["REGIONAL"]
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 resource "aws_api_gateway_resource" "resource" {
   rest_api_id = aws_api_gateway_rest_api.lambda-ocr-module-rest.id
@@ -246,8 +211,6 @@ resource "aws_api_gateway_stage" "stage" {
 
 }
 
-
-
 resource "aws_api_gateway_method_response" "response_200" {
   rest_api_id = aws_api_gateway_rest_api.lambda-ocr-module-rest.id
   resource_id = aws_api_gateway_resource.resource.id
@@ -255,53 +218,19 @@ resource "aws_api_gateway_method_response" "response_200" {
   status_code = "200"
 }
 
-
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
+
 locals {
   account_id = data.aws_caller_identity.current.account_id
   region     = data.aws_region.current.name
 }
+
 resource "aws_lambda_permission" "apigw_lambda" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.example.function_name
-
   principal = "apigateway.amazonaws.com"
-
   source_arn = "arn:aws:execute-api:${local.region}:${local.account_id}:${aws_api_gateway_rest_api.lambda-ocr-module-rest.id}/*/${aws_api_gateway_method.method.http_method}${aws_api_gateway_resource.resource.path}"
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

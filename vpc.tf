@@ -6,6 +6,36 @@ resource "aws_vpc" "main" {
   }
 }
 
+resource "aws_internet_gateway" "main" {
+  vpc_id            = aws_vpc.main.id
+  tags = {
+    Name = "igw:lambda-ocr-module"
+  }
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.us-east-1.s3"
+}
+
+resource "aws_default_route_table" "example" {
+  default_route_table_id = aws_vpc.main.default_route_table_id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    Name = "rt:lambda-ocr-module"
+  }
+}
+
+resource "aws_vpc_endpoint_route_table_association" "pr_s3" {
+  vpc_endpoint_id = aws_vpc_endpoint.s3.id
+  route_table_id = aws_vpc.main.default_route_table_id
+}
+
 resource "aws_subnet" "subnet_for_lambda" {
   for_each          = var.public_subnet_numbers
   vpc_id            = aws_vpc.main.id
@@ -17,35 +47,4 @@ resource "aws_subnet" "subnet_for_lambda" {
     ManagedBy = "terraform"
     Subnet    = "${each.key}-${each.value}"
   }
-}
-
-resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.main.id
-  tabs = {
-    Name = "gw.lambda-ocr-module"
-  }
-}
-resource "aws_route_table" "example" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = ""
-    gateway_id = aws_internet_gateway.gw.id
-  }
-
-  tags = {
-    Name = "rt.lambda-ocr-module"
-  }
-}
-
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = aws_vpc.main.id
-  service_name = "com.amazonaws.us-east-1.s3"
-}
-
-
-
-resource "aws_route_table_association" "a" {
-  subnet_id = aws_subnet.subnet_for_lambda.id
-
 }
